@@ -36,11 +36,11 @@ jobs:
 
       - name: Tạo file ZIP chứa mã nguồn sau khi sync
         run: |
-          mkdir backup-zips
+          mkdir -p backup-zips
           zip -r backup-zips/openhands-$(date +'%Y-%m-%d').zip .
 
       - name: Upload file ZIP làm Artifact (tải về)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: openhands-backup-zip
           path: backup-zips/openhands-*.zip
