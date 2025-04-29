@@ -2,8 +2,8 @@ name: Sync and Backup OpenHands
 
 on:
   schedule:
-    - cron: '0 3 * * *'     # Mỗi ngày lúc 03:00 UTC
-  workflow_dispatch:         # Cho phép chạy tay nếu cần
+    - cron: '0 3 * * *' # Mỗi ngày lúc 03:00 UTC
+  workflow_dispatch:
 
 jobs:
   sync-and-backup:
@@ -30,15 +30,15 @@ jobs:
         run: |
           git remote add upstream https://github.com/All-Hands-AI/OpenHands.git
           git fetch upstream
-          git merge upstream/main --allow-unrelated-histories -m "Sync from upstream"
-          git push origin main
+          git merge upstream/main --allow-unrelated-histories --no-edit || echo "Có xung đột khi merge, cần xử lý tay!"
 
-      - name: Nén toàn bộ repo thành file zip
+      - name: Nén mã nguồn thành .zip
         run: |
-          zip -r backup-latest.zip . -x ".git/*"
+          mkdir -p backup
+          zip -r backup/source-code.zip . -x ".git/*"
 
-      - name: Upload file .zip làm GitHub Artifact
+      - name: Tải lên GitHub Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: OpenHands-backup
-          path: backup-latest.zip
+          name: backup-source-code
+          path: backup/source-code.zip
