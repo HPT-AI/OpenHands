@@ -2,43 +2,34 @@ name: Sync and Backup OpenHands
 
 on:
   schedule:
-    - cron: '0 3 * * *' # Mỗi ngày lúc 03:00 UTC
-  workflow_dispatch:
+    - cron: '0 3 * * *' # Chạy lúc 03:00 UTC mỗi ngày
+  workflow_dispatch:     # Cho phép chạy thủ công
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   sync-and-backup:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo của anh
+      - name: Checkout source code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Thiết lập Git
+      - name: Cấu hình Git cho bot
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Tạo nhánh backup trước khi đồng bộ
-        run: |
-          DATE=$(date +'%Y-%m-%d')
-          git checkout -b backup-$DATE
-          git push origin backup-$DATE
+      - name: Tạo file backup (demo)
+        run: echo "Backup lúc $(date)" > backup-log.txt
 
-      - name: Thêm remote repo gốc và đồng bộ
-        run: |
-          git remote add upstream https://github.com/All-Hands-AI/OpenHands.git
-          git fetch upstream
-          git merge upstream/main --allow-unrelated-histories --no-edit || echo "Có xung đột khi merge, cần xử lý tay!"
-
-      - name: Nén mã nguồn thành .zip
-        run: |
-          mkdir -p backup
-          zip -r backup/source-code.zip . -x ".git/*"
-
-      - name: Tải lên GitHub Artifact
+      - name: Upload backup log lên GitHub Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: backup-source-code
-          path: backup/source-code.zip
+          name: backup-log
+          path: backup-log.txt
