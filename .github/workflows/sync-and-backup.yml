@@ -2,12 +2,13 @@ name: Sync and Backup OpenHands
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # Mỗi ngày lúc 03:00 UTC
-  workflow_dispatch:      # Cho phép chạy tay nếu cần
+    - cron: '0 3 * * *'        # Mỗi ngày lúc 03:00 UTC
+  workflow_dispatch:          # Cho phép chạy tay nếu cần
 
 jobs:
   sync-and-backup:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo của anh
         uses: actions/checkout@v3
@@ -31,16 +32,13 @@ jobs:
           git remote add upstream https://github.com/All-Hands-AI/OpenHands.git
           git fetch upstream
           git checkout main
-          git merge upstream/main --allow-unrelated-histories -m "🔁 Auto-sync from upstream"
+          git merge upstream/main --allow-unrelated-histories --no-edit || true
           git push origin main
 
-      - name: Tạo file ZIP chứa mã nguồn sau khi sync
+      - name: Tạo file ZIP toàn repo
         run: |
-          mkdir -p backup-zips
-          zip -r backup-zips/openhands-$(date +'%Y-%m-%d').zip .
+          ZIP_NAME=openhands-backup-$(date +'%Y-%m-%d').zip
+          git archive --format zip --output $ZIP_NAME HEAD
 
-      - name: Upload file ZIP làm Artifact (tải về)
+      - name: Lưu artifact bản ZIP
         uses: actions/upload-artifact@v2
-        with:
-          name: openhands-backup-zip
-          path: backup-zips/openhands-*.zip
